@@ -1,4 +1,5 @@
 import type { Movie } from "../types/movie";
+import { useNavigate } from "react-router-dom";
 import "./MovieCard.css";
 
 interface MovieCardProps {
@@ -14,11 +15,15 @@ export default function MovieCard({
     vote_average,
     genre_ids,
     poster_path,
+    id,
   },
   genreMap,
 }: MovieCardProps) {
-  // Map genre_ids to names using genreMap
   const genreNames = genre_ids.map((id) => genreMap[id] || "unknown");
+  const navigate = useNavigate();
+  function handleMovieDetails(moviedId: number) {
+    navigate(`/movie/${moviedId}`);
+  }
 
   return (
     <div className="movie-card">
@@ -35,6 +40,9 @@ export default function MovieCard({
         <p className="movie-genres">{genreNames.join(", ")}</p>
         <p className="movie-release">Release: {release_date}</p>
         <p className="movie-rating">Rating: {vote_average}</p>
+        <button onClick={() => handleMovieDetails(id)}>
+          Click For Movie Details
+        </button>
       </div>
     </div>
   );

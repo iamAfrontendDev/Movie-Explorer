@@ -18,31 +18,23 @@ export function useInfiniteScroll({
 }: InfiniteScrollProps) {
   const throttledLoadMore = useThrottle(() => {
     if (loadingRef.current || !hasMoreRef.current) return;
-
     loadMovies(pageRef.current);
     pageRef.current += 1;
-  }, 500);
+  }, 300);
 
   useEffect(() => {
     if (!bottomDivRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const entry = entries[0];
-
-        if (entry.isIntersecting) {
+        if (entries[0].isIntersecting) {
           throttledLoadMore();
         }
       },
-      {
-        root: null,
-        rootMargin: "200px",
-        threshold: 0.5,
-      },
+      { root: null, rootMargin: "300px", threshold: 0 },
     );
 
     observer.observe(bottomDivRef.current);
-
     return () => observer.disconnect();
-  }, [bottomDivRef, throttledLoadMore]);
+  }, [bottomDivRef, throttledLoadMore, loadingRef, hasMoreRef]);
 }

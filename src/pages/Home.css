@@ -1,0 +1,27 @@
+.no-movies {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #ff4d4f;
+}
+
+.loading-message,
+.no-more-message {
+  margin-top: 15px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.filter-section h2 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  color: #222;
+}
+.status-msg {
+  margin-top: 1rem;
+  font-weight: 500;
+  color: #444;
+}

@@ -1,4 +1,5 @@
-import type { Genre, Movie } from "../types/movie";
+// MovieList.tsx
+import type { Movie } from "../types/movie";
 import MovieCard from "./MovieCard";
 
 interface MovieListProps {
@@ -7,12 +8,30 @@ interface MovieListProps {
 }
 
 export default function MovieList({ popularMovies, genreMap }: MovieListProps) {
+  // Remove duplicates by movie id
+  const uniqueMovies = Array.from(
+    new Map(
+      popularMovies.map((popularMovieCard) => [
+        popularMovieCard.id,
+        popularMovieCard,
+      ]),
+    ).values(),
+  );
+
+  if (uniqueMovies.length === 0) {
+    return <h2>No movies match your filters</h2>;
+  }
+
   return (
-    <>
-      <h1>Movie List</h1>
-      {popularMovies.map((popularMovieCard) => (
-        <MovieCard popularMovieCard={popularMovieCard} genreMap={genreMap} />
+    <div className="movie-list">
+      {uniqueMovies.map((popularMovieCard, index) => (
+        // key = movie.id + index ensures uniqueness even if duplicates exist
+        <MovieCard
+          key={`${popularMovieCard.id}-${index}`}
+          popularMovieCard={popularMovieCard}
+          genreMap={genreMap}
+        />
       ))}
-    </>
+    </div>
   );
 }

@@ -1,12 +1,12 @@
 import { TMDB_API_KEY } from "../constants/constants";
 
-export async function fetchFROMTMDB<T = any[]>(
-  URL: string,
+export async function fetchFROMTMDB<T>(
+  url: string,
   options?: RequestInit,
   extractResults: boolean = true,
 ): Promise<T> {
   try {
-    const response = await fetch(URL, {
+    const response = await fetch(url, {
       ...options,
       headers: {
         Authorization: `Bearer ${TMDB_API_KEY}`,
@@ -16,19 +16,20 @@ export async function fetchFROMTMDB<T = any[]>(
     });
 
     if (!response.ok) {
-      throw new Error(`TMDB API request failed: ${response.status}`);
+      throw new Error("TMDB request failed");
     }
 
     const data = await response.json();
 
-    // Return only results array if extractResults is true
+    // LIST APIs → return data.results
     if (extractResults) {
-      return data.results ?? [];
+      return data.results as T;
     }
 
-    return data;
+    // DETAIL / METADATA APIs → return full object
+    return data as T;
   } catch (error) {
-    console.error("fetchFROMTMDB error:", error);
-    return extractResults ? ([] as any as T) : ({} as T);
+    console.error("TMDB fetch error:", error);
+    throw error;
   }
 }
