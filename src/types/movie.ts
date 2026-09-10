@@ -12,12 +12,19 @@ export interface Genre {
   id: number;
   name: string;
 }
-export interface MovieApiResponse {
+export interface TMDBPaginatedResponse<T> {
   page: number;
-  results: Movie[];
+  results: T[];
   total_pages: number;
   total_results: number;
 }
+
+export interface MovieApiResponse<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+}
+
 
 export interface MovieDetails {
   id: number;
