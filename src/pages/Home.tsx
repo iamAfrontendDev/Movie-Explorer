@@ -1,134 +1,44 @@
 import { useEffect, useRef, useState } from "react";
-import type { Movie, MovieFilter, Genre } from "../types/movie";
+import type { Movie, TMDBPaginatedResponse } from "../types/movie";
 import MovieList from "../components/MovieList";
-import { getPopularMovies } from "../api/movieAPI";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
-import { fetchFROMTMDB } from "../api/tmdbClient";
 import { TMDB_BASE_URL } from "../constants/constants";
-import MovieFilters from "../components/MovieFilter";
+import { useFetch } from "../hooks/useFetch";
 
 export default function Home() {
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
-  const [movieFilters, setMovieFilters] = useState<MovieFilter>({
-    genre: "",
-    year: "",
-    rating: "",
-  });
-  const [genreMap, setGenreMap] = useState<Record<number, string>>({});
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-
-  const pageRef = useRef<number>(1);
-  const bottomDivRef = useRef<HTMLDivElement | null>(null);
-  const loadingRef = useRef<boolean>(false);
+  const [page, setPage] = useState(1);
+  const url = `${TMDB_BASE_URL}/movie/popular?page=${page}`;
+  const { data, loading, error } = useFetch<TMDBPaginatedResponse<Movie>>(url);
+  const sentinalRef = useRef<HTMLDivElement | null>(null);
   const hasMoreRef = useRef<boolean>(true);
 
-  // Load initial movies
   useEffect(() => {
-    loadMovies(pageRef.current);
-  }, []);
-
-  async function loadMovies(page: number) {
-    setLoading(true);
-    loadingRef.current = true;
-
-    try {
-      const data = await getPopularMovies(page);
-
-      if (!data || data.length === 0) {
-        setHasMore(false);
+    if (data) {
+      setPopularMovies((prev) => [...prev, ...data.results]);
+      const checkHasmore = data.page >= data.total_pages;
+      if (checkHasmore) {
         hasMoreRef.current = false;
       }
-
-      setPopularMovies((prev) => [...prev, ...data]);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-      loadingRef.current = false;
     }
-  }
+  }, [data]);
 
-  // Fetch genres
-  useEffect(() => {
-    async function fetchGenres() {
-      try {
-        const data = await fetchFROMTMDB<{ genres: Genre[] }>(
-          `${TMDB_BASE_URL}/genre/movie/list`,
-          {},
-          false,
-        );
-        const map: Record<number, string> = {};
-        data.genres.forEach((g) => (map[g.id] = g.name));
-        setGenreMap(map);
-      } catch (err) {
-        console.error(err);
-      }
+  useInfiniteScroll(sentinalRef, () => {
+    if (hasMoreRef.current) {
+      setPage((prev) => prev + 1);
     }
-    fetchGenres();
-  }, []);
-
-  // Apply filters & search
-  useEffect(() => {
-    const filtered = popularMovies.filter((movie) => {
-      const matchesGenre =
-        !movieFilters.genre ||
-        movie.genre_ids.includes(Number(movieFilters.genre));
-
-      const matchesYear =
-        !movieFilters.year ||
-        movie.release_date?.startsWith(String(movieFilters.year));
-
-      const matchesRating =
-        !movieFilters.rating ||
-        movie.vote_average >= Number(movieFilters.rating);
-
-      const matchesSearch =
-        !searchQuery ||
-        movie.title.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return matchesGenre && matchesYear && matchesRating && matchesSearch;
-    });
-
-    setFilteredMovies(filtered);
-  }, [popularMovies, movieFilters, searchQuery]);
-  useInfiniteScroll({
-    loadingRef,
-    hasMoreRef,
-    loadMovies,
-    pageRef,
-    bottomDivRef,
   });
-
   return (
     <div className="home-container">
-      <MovieFilters
-        filters={movieFilters}
-        setFilters={setMovieFilters}
-        genreMap={genreMap}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-
-      {loading && <h2 className="status-msg">Loading...</h2>}
-
-      {!loading && filteredMovies.length === 0 && (
-        <h2 className="status-msg">
-          {searchQuery
-            ? `No movies found for "${searchQuery}"`
-            : "No movies match your filters"}
-        </h2>
+      {loading && <h2>Loading...</h2>}
+      {popularMovies.length === 0 && !loading && !error && (
+        <h2>No Movies Available</h2>
       )}
-
-      <MovieList popularMovies={filteredMovies} genreMap={genreMap} />
-
-      <div ref={bottomDivRef} style={{ height: "20px" }} />
-
-      {!loading && !hasMore && filteredMovies.length > 0 && (
-        <h2 className="status-msg">No more movies to show</h2>
+      <MovieList popularMovies={popularMovies} />
+      {error && (
+        <h2>Something went wrong while loading movies. Please try again.</h2>
       )}
+      <div ref={sentinalRef} style={{ height: "20px" }} />
     </div>
   );
 }
