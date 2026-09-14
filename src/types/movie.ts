@@ -23,8 +23,8 @@ export interface MovieApiResponse<T> {
   data: T | null;
   loading: boolean;
   error: string | null;
+  isFetchingRef: React.RefObject<boolean>;
 }
-
 
 export interface MovieDetails {
   id: number;

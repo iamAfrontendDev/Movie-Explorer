@@ -9,10 +9,11 @@ export default function Home() {
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
   const [page, setPage] = useState(1);
   const url = `${TMDB_BASE_URL}/movie/popular?page=${page}`;
-  const { data, loading, error } = useFetch<TMDBPaginatedResponse<Movie>>(url);
+  const { data, loading, isFetchingRef, error } =
+    useFetch<TMDBPaginatedResponse<Movie>>(url);
   const sentinalRef = useRef<HTMLDivElement | null>(null);
   const hasMoreRef = useRef<boolean>(true);
-
+console.log("data",data);
   useEffect(() => {
     if (data) {
       setPopularMovies((prev) => [...prev, ...data.results]);
@@ -24,7 +25,7 @@ export default function Home() {
   }, [data]);
 
   useInfiniteScroll(sentinalRef, () => {
-    if (hasMoreRef.current) {
+    if (hasMoreRef.current && !isFetchingRef.current) {
       setPage((prev) => prev + 1);
     }
   });
@@ -38,7 +39,9 @@ export default function Home() {
       {error && (
         <h2>Something went wrong while loading movies. Please try again.</h2>
       )}
-      <div ref={sentinalRef} style={{ height: "20px" }} />
+      {popularMovies.length > 0 && (
+        <div ref={sentinalRef} style={{ height: "10px" }} />
+      )}
     </div>
   );
 }
