@@ -12,6 +12,9 @@ export interface Genre {
   id: number;
   name: string;
 }
+export interface GenreListResponse {
+  genres: Genre[];
+}
 export interface TMDBPaginatedResponse<T> {
   page: number;
   results: T[];

@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import type { Movie, TMDBPaginatedResponse } from "../types/movie";
+import {
+  type GenreListResponse,
+  type Genre,
+  type Movie,
+  type TMDBPaginatedResponse,
+} from "../types/movie";
 import MovieList from "../components/MovieList";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { TMDB_BASE_URL } from "../constants/constants";
@@ -13,7 +18,11 @@ export default function Home() {
     useFetch<TMDBPaginatedResponse<Movie>>(url);
   const sentinalRef = useRef<HTMLDivElement | null>(null);
   const hasMoreRef = useRef<boolean>(true);
-console.log("data",data);
+  console.log("data", data);
+  const [genreMap, setGenreMap] = useState<Record<number, string>>({});
+  console.log(genreMap);
+  const genreListUrl = `${TMDB_BASE_URL}/genre/movie/list`;
+  const { data: genreListData } = useFetch<GenreListResponse>(genreListUrl);
   useEffect(() => {
     if (data) {
       setPopularMovies((prev) => [...prev, ...data.results]);
@@ -23,6 +32,18 @@ console.log("data",data);
       }
     }
   }, [data]);
+  const covertGenreMap = (genres: Genre[]) => {
+    const map: Record<number, string> = {};
+    for (let i = 0; i < genres.length; i++) {
+      map[genres[i].id] = genres[i].name;
+    }
+    return map;
+  };
+  useEffect(() => {
+    if (genreListData?.genres) {
+      setGenreMap(covertGenreMap(genreListData.genres));
+    }
+  }, [genreListData]);
 
   useInfiniteScroll(sentinalRef, () => {
     if (hasMoreRef.current && !isFetchingRef.current) {
@@ -35,7 +56,7 @@ console.log("data",data);
       {popularMovies.length === 0 && !loading && !error && (
         <h2>No Movies Available</h2>
       )}
-      <MovieList popularMovies={popularMovies} />
+      <MovieList popularMovies={popularMovies} genreMap={genreMap} />
       {error && (
         <h2>Something went wrong while loading movies. Please try again.</h2>
       )}
