@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { Movie } from "../types/movie";
 import "./MovieCard.css";
 
@@ -14,11 +15,16 @@ export default function MovieCard({
     vote_average,
     genre_ids,
     poster_path,
-    // id,
+    id,
   },
   genreMap,
 }: MovieCardProps) {
   const genreNames = genre_ids.map((id) => genreMap[id]);
+  const navigate = useNavigate();
+
+const handleMovieDetails = (id: number) => {
+  navigate(`/movie/${id}`);
+};
   return (
     <div className="movie-card">
       {poster_path && (
@@ -36,9 +42,9 @@ export default function MovieCard({
         )}
         <p className="movie-release">Release: {release_date}</p>
         <p className="movie-rating">Rating: {vote_average}</p>
-        {/* <button onClick={() => handleMovieDetails(id)}>
+        <button onClick={() => handleMovieDetails(id)}>
           Click For Movie Details
-        </button> */}
+        </button>
       </div>
     </div>
   );

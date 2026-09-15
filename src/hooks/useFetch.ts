@@ -41,8 +41,10 @@ export function useFetch<T>(
           );
         }
       } finally {
-        setLoading(false);
-        isFetchingRef.current = false;
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          isFetchingRef.current = false;
+        }
       }
     };
     fetchData();

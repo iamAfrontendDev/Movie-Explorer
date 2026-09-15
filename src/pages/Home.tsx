@@ -18,9 +18,7 @@ export default function Home() {
     useFetch<TMDBPaginatedResponse<Movie>>(url);
   const sentinalRef = useRef<HTMLDivElement | null>(null);
   const hasMoreRef = useRef<boolean>(true);
-  console.log("data", data);
   const [genreMap, setGenreMap] = useState<Record<number, string>>({});
-  console.log(genreMap);
   const genreListUrl = `${TMDB_BASE_URL}/genre/movie/list`;
   const { data: genreListData } = useFetch<GenreListResponse>(genreListUrl);
   useEffect(() => {
@@ -50,10 +48,11 @@ export default function Home() {
       setPage((prev) => prev + 1);
     }
   });
+
   return (
     <div className="home-container">
       {loading && <h2>Loading...</h2>}
-      {popularMovies.length === 0 && !loading && !error && (
+      {page === 1 && data && data.results.length === 0 && (
         <h2>No Movies Available</h2>
       )}
       <MovieList popularMovies={popularMovies} genreMap={genreMap} />
