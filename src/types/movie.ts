@@ -42,6 +42,7 @@ export interface MovieDetails {
 }
 
 export interface MovieFilter {
+  searchQuery: string;
   genre: string;
   year: number | string;
   rating: number | string;

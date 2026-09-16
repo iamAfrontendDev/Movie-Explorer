@@ -19,7 +19,7 @@ export default function MovieCard({
   },
   genreMap,
 }: MovieCardProps) {
-  const genreNames = genre_ids.map((id) => genreMap[id]);
+  const genreNames = (genre_ids || []).map((id) => genreMap[id]);
   const navigate = useNavigate();
 
 const handleMovieDetails = (id: number) => {

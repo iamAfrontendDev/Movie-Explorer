@@ -6,39 +6,43 @@ interface MovieFilterProps {
   filters: MovieFilter;
   setFilters: Dispatch<SetStateAction<MovieFilter>>;
   genreMap: Record<number, string>;
-  searchQuery: string;
-  setSearchQuery: Dispatch<SetStateAction<string>>;
 }
 
 export default function MovieFilters({
   filters,
   setFilters,
   genreMap,
-  searchQuery,
-  setSearchQuery,
 }: MovieFilterProps) {
+  function handleFilterChange(
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLSelectElement>,
+  ) {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  }
   return (
     <div className="filters-wrapper">
       <div className="search-bar">
         <input
           type="text"
           placeholder="Search movies..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={filters.searchQuery}
+          name="searchQuery"
+          onChange={handleFilterChange}
         />
       </div>
 
       <div className="filters">
         <select
           value={filters.genre}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, genre: e.target.value }))
-          }
+          onChange={handleFilterChange}
+          name="genre"
         >
           <option value="">All Genres</option>
-          {Object.entries(genreMap).map(([id, name]) => (
+          {Object.keys(genreMap).map((id) => (
             <option key={id} value={id}>
-              {name}
+              {genreMap[Number(id)]}
             </option>
           ))}
         </select>
@@ -46,21 +50,17 @@ export default function MovieFilters({
         <input
           type="text"
           placeholder="Year"
+          name="year"
           value={filters.year}
-          onChange={(e) => {
-            const val = e.target.value.replace(/\D/, "");
-            setFilters((prev) => ({ ...prev, year: val }));
-          }}
+          onChange={handleFilterChange}
         />
 
         <input
           type="text"
           placeholder="Min Rating"
           value={filters.rating}
-          onChange={(e) => {
-            const val = e.target.value.replace(/[^0-9.]/g, "");
-            setFilters((prev) => ({ ...prev, rating: val }));
-          }}
+          name="rating"
+          onChange={handleFilterChange}
         />
       </div>
     </div>
