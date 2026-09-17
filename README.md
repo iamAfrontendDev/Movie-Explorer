@@ -1,94 +1,65 @@
 # Movie Explorer Dashboard
 
-## Overview
+A movie discovery app built with **React**, **TypeScript**, and **Vite**, powered by the **TMDB API**. Browse popular movies with infinite scroll, search the full TMDB catalog, and view detailed movie info with related titles.
 
-This is a Movie Explorer Dashboard built using **React** and **TypeScript**. The app allows users to discover movies, browse lists with infinite scroll, view movie details, and filter by genres. It fetches data from the **TMDB public API**.
+## Features
 
-## Features Implemented
+- Browse popular movies with infinite scroll
+- Search movies by title, debounced and fetched live from TMDB (not limited to already-loaded results)
+- Movie details page with overview, release date, rating, genres, and backdrop/poster
+- Related movies on the details page, with its own independent pagination
+- Genre names resolved and shown on each movie card
+- Loading, empty, and error states throughout — while browsing, while searching, and at the end of results
+- Filters UI for genre, release year, and minimum rating (filtering logic in progress)
 
-- Browse popular movies with **infinite scroll**
-- Display movie **poster, title, release year, rating, overview, and genres**
-- Dynamic fetching of **genre list** to display genre names
-- Loading and empty states handled
-- Modular and maintainable architecture using:
-  - `Home.tsx` as main page
-  - `MovieList` for listing movies
-  - `MovieCard` for individual movie display
-  - `fetchFROMTMDB` as API utility
+## Tech Stack
 
-**Note:** Clicking a movie card to view full details is pending implementation.
+- React 19 + TypeScript + Vite
+- TMDB API (`https://api.themoviedb.org/3`)
+- No UI library — custom components and CSS
 
-## Setup Instructions
+## Getting Started
 
-1. Clone the repository:
-
-   git clone <your-repo-url>
-   cd <repo-folder>
-
-2. Install dependencies:
-
+1. Clone the repo and install dependencies:
+```bash
+   git clone <this-repo-url>
+   cd Movie-Explorer
    npm install
+```
 
-   # or
+2. Create a `.env` file in the project root:
 
-   yarn install
+VITE_TMDB_API_KEY=your_tmdb_api_read_access_token_here
+VITE_TMDB_BASE_URL=https://api.themoviedb.org/3
+VITE_TMDB_BASE_IMAGE_URL=https://image.tmdb.org/t/p/w500
 
-3. Start the development server:
+   You can get a free API key/read access token at [themoviedb.org](https://www.themoviedb.org/settings/api).
 
-   npm start
+3. Start the dev server:
+```bash
+   npm run dev
+```
+   Then open the local URL shown in your terminal (usually `http://localhost:5173`).
 
-   # or
+## Architecture
 
-   yarn dev
+- **`useFetch`** — reusable data-fetching hook (loading/data/error state, `AbortController` cleanup, and an `isFetchingRef` for tracking in-flight requests synchronously)
+- **`useInfiniteScroll`** — wraps an `IntersectionObserver` behind a callback ref, so the sentinel element is observed reliably even when it mounts after the initial render (e.g. once search results arrive)
+- **`useDebounce`** — delays reacting to fast-changing input (used for search) until the user stops typing
+- **`Home.tsx`** — handles popular-movie browsing and search as two independent flows, each with its own page counter, "has more" tracking, and accumulated results, so neither interferes with the other
+- **`MovieList` / `MovieCard`** — presentational components; `MovieCard` resolves genre IDs to names via a lookup map passed down from `Home`
+- **`MovieDetails.tsx`** — fetches a movie's details and its related movies as two independent requests
 
-4. Open your browser at `http://localhost:3000` (or the port shown in terminal).
+## Notable Decisions
 
-## TMDB API Configuration
+- Search hits TMDB's `/search/movie` endpoint directly instead of filtering already-loaded popular movies, so results reflect TMDB's full catalog.
+- Popular-movie browsing and search keep fully separate state, so switching between them doesn't cause one to affect the other.
+- In-flight/has-more tracking inside the scroll logic uses refs rather than state, since state updates are asynchronous and can lag behind a quick sequence of scroll events.
+- The scroll intersection handler is wrapped in `useCallback` to keep a stable function reference, preventing the observer from being torn down and recreated on every render.
 
-- **TMDB Base URL:** `https://api.themoviedb.org/3`
-- **TMDB Read Access Token:**
-  `eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNWYyMDY0NDEyZWI5ZjZhZWFkMmNiNGYxMjdmNWIxNiIsInN1YiI6IjY5MzQwMjY2MGE2NjFkNjNkNmI3MGRiNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.WJIvF2pI45Pr_KeVmP30y5BJsKafjJrOY1JW2jMjXGc`
-- **TMDB API Key:** `b5f2064412eb9f6aead2cb4f127f5b16`
+## Known Limitations
 
-> The `fetchFROMTMDB` utility automatically attaches the token to requests.
-
-## Architecture Overview
-
-- **Home.tsx**: Manages state (`popularMovies`, `filteredMovies`, `genreMap`, `page`, `loading`, `hasMore`) and triggers infinite scroll.
-- **MovieList.tsx**: Receives `filteredMovies` and `genreMap` as props and renders movie cards.
-- **MovieCard.tsx**: Displays individual movie information — poster, title, release year, rating, overview, and genres.
-- **Hooks**: `useInfiniteScroll` handles infinite scrolling logic.
-- **API Layer**: `fetchFROMTMDB` abstracts API calls, centralizing base URL and token usage.
-
-## Key Design Decisions
-
-- **Ref-based throttling** in `useInfiniteScroll` ensures efficient API calls.
-- **Client-side filtering** is applied on top of fetched movie data for simplicity.
-- **State vs Context**: Local state (`useState`, `useRef`) is sufficient for current requirements.
-- **Separation of concerns** ensures components remain reusable and easy to maintain.
-
-## Known Limitations / Next Steps
-
-- **Initial infinite scroll behavior issue**:
-  On the first load, infinite scroll may not trigger immediately due to rendering timing, observer attachment order, and viewport height constraints. In some cases, the user must scroll once before additional data loads. This behavior is a known limitation and can be refined further.
-
-- **Duplicate empty-state messages during search and filtering**:
-  The following conditional render in `Home.tsx`:
-
-  ```tsx
-  {
-    !loading && filteredMovies.length === 0 && (
-      <h2 className="status-msg">
-        {searchQuery
-          ? `No movies found for "${searchQuery}"`
-          : "No movies match your filters"}
-      </h2>
-    );
-  }
-  ```
-
-  can result in **multiple empty-state messages** being shown when both the UI condition and the filtered movie list logic evaluate an empty state at the same time. This can be resolved by centralizing empty-state rendering into a single conditional block.
-
-- API failures are logged to the console; more **user-friendly error handling** can be added.
-
-- Styling is responsive but not pixel-perfect and can be improved.
+- Genre, year, and rating filters have UI but no filtering logic applied yet.
+- TMDB's search endpoint can occasionally return the same movie on more than one results page; duplicate-key warnings may show up during long search sessions.
+- No automated tests yet.
+- Styling is responsive but not pixel-perfect.
