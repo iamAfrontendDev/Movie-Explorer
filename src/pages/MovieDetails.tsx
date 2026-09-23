@@ -1,22 +1,25 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { TMDB_BASE_URL, TMDB_IMAGE_BASE_URL } from "../constants/constants";
 import type {
   Movie,
   MovieDetails,
   TMDBPaginatedResponse,
 } from "../types/movie";
-import "./MovieDetails.css";
 import { useFetch } from "../hooks/useFetch";
+import MovieCarousel from "../components/Moviecarousel";
+import "./MovieDetails.css";
 
 export default function MovieDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const movieDetailsUrl = `${TMDB_BASE_URL}/movie/${id}`;
   const {
     data: movieDetails,
     loading,
     error,
   } = useFetch<MovieDetails>(movieDetailsUrl);
+
   const relatedMoviesUrl = `${TMDB_BASE_URL}/movie/${id}/similar`;
   const {
     data: relatedMovies,
@@ -24,81 +27,115 @@ export default function MovieDetails() {
     error: relatedError,
   } = useFetch<TMDBPaginatedResponse<Movie>>(relatedMoviesUrl);
 
-  if (loading) return <h2 className="status-msg">Loading...</h2>;
-  if (error) return <h2 className="status-msg">{error}</h2>;
-  if (!movieDetails) return <h2 className="status-msg">Movie Not Found</h2>;
+  if (loading) return <p className="status">Loading movie…</p>;
+  if (error)
+    return (
+      <p className="status status-error">
+        Couldn't load this movie. Go back and try again.
+      </p>
+    );
+  if (!movieDetails) return <p className="status">Movie not found.</p>;
 
   const {
     title,
     overview,
     release_date,
     vote_average,
+    runtime,
     genres,
     poster_path,
     backdrop_path,
   } = movieDetails;
 
+  const year = release_date ? release_date.slice(0, 4) : "";
+  const rating = vote_average > 0 ? vote_average.toFixed(1) : null;
+  const hours = runtime ? Math.floor(runtime / 60) : 0;
+  const minutes = runtime ? runtime % 60 : 0;
+  const runtimeText = runtime
+    ? `${hours ? `${hours}h ` : ""}${minutes}m`
+    : "";
+
   return (
-    <div className="movie-details-page">
+    <div className="details">
+      {/* Backdrop image with a dark fade so text stays readable */}
       <div
-        className="movie-backdrop"
+        className="details-backdrop"
         style={{
           backgroundImage: backdrop_path
             ? `url(${TMDB_IMAGE_BASE_URL}${backdrop_path})`
             : "none",
         }}
-      >
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          Back
+        aria-hidden="true"
+      />
+
+      <div className="details-inner">
+        <button
+          type="button"
+          className="details-back"
+          onClick={() => navigate(-1)}
+        >
+          ← Back
         </button>
-        <div className="backdrop-overlay">
-          <div className="movie-info">
-            {poster_path && (
-              <img
-                src={`${TMDB_IMAGE_BASE_URL}${poster_path}`}
-                alt={title}
-                className="movie-poster"
-              />
-            )}
-            <div className="movie-text">
-              <h1>{title}</h1>
-              <p>{overview}</p>
-              <p>Genres: {genres.map((g) => g.name).join(", ")}</p>
-              <p>Release: {release_date}</p>
-              <p>Rating: {vote_average}</p>
+
+        <div className="details-main">
+          {poster_path ? (
+            <img
+              src={`${TMDB_IMAGE_BASE_URL}${poster_path}`}
+              alt={`${title} poster`}
+              className="details-poster"
+            />
+          ) : (
+            <div className="details-poster details-no-poster">No poster</div>
+          )}
+
+          <div className="details-text">
+            <h1 className="details-title">{title}</h1>
+
+            <div className="details-facts">
+              {rating && (
+                <span
+                  className="details-rating"
+                  aria-label={`Rated ${rating} out of 10`}
+                >
+                  ★ {rating}
+                </span>
+              )}
+              {year && <span>{year}</span>}
+              {runtimeText && <span>{runtimeText}</span>}
             </div>
+
+            {genres.length > 0 && (
+              <ul className="genre-chips" aria-label="Genres">
+                {genres.map((g) => (
+                  <li key={g.id} className="genre-chip">
+                    {g.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {overview && <p className="details-overview">{overview}</p>}
           </div>
         </div>
       </div>
-      {relatedLoading && <h2>Loading Related Movies...</h2>}
-      {relatedError && <h2>{relatedError}</h2>}
-      {relatedMovies && relatedMovies.results.length === 0 && (
-        <h2>No related movies found</h2>
-      )}
-      {relatedMovies && relatedMovies.results.length > 0 && (
-        <div className="related-movies">
-          <h2>Related Movies</h2>
-          <div className="related-movies-grid">
-            {relatedMovies.results.map((movie) => (
-              <Link
-                to={`/movie/${movie.id}`}
-                key={movie.id}
-                className="related-movie-card"
-              >
-                {movie.poster_path ? (
-                  <img
-                    src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
-                    alt={movie.title}
-                  />
-                ) : (
-                  <div className="no-poster">No Image</div>
-                )}
-                <p>{movie.title}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+
+      <section className="related" aria-labelledby="related-heading">
+        <h2 id="related-heading" className="related-heading">
+          More like this
+        </h2>
+
+        {relatedLoading && <p className="related-status">Loading…</p>}
+        {relatedError && (
+          <p className="related-status">Couldn't load similar movies.</p>
+        )}
+        {relatedMovies && relatedMovies.results.length === 0 && (
+          <p className="related-status">No similar movies found.</p>
+        )}
+
+        {relatedMovies && relatedMovies.results.length > 0 && (
+          <MovieCarousel movies={relatedMovies.results} label="More like this" />
+        )}
+      </section>
     </div>
   );
 }

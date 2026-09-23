@@ -1,89 +1,157 @@
-.movie-backdrop {
+.details {
   position: relative;
-  width: 100%;
-  background-size: cover;
-  background-position: center;
-  padding: 60px 20px 40px;
-  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-.back-btn {
+/* ---------- Backdrop ---------- */
+.details-backdrop {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 10;
-  padding: 8px 14px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  inset: 0 0 auto 0;
+  height: min(72vh, 680px);
+  background-size: cover;
+  background-position: center 20%;
 }
 
-.backdrop-overlay {
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 20px;
-  border-radius: 10px;
+.details-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(15, 22, 38, 0.3) 0%,
+      rgba(15, 22, 38, 0.75) 55%,
+      var(--screen) 100%
+    ),
+    linear-gradient(to right, rgba(15, 22, 38, 0.85) 0%, rgba(15, 22, 38, 0) 65%);
+}
+
+/* ---------- Hero content ---------- */
+.details-inner {
+  position: relative;
   max-width: 1200px;
-  margin: auto;
+  margin: 0 auto;
+  padding: 24px var(--page-pad) 0;
 }
 
-.movie-info {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.movie-poster {
-  width: 200px;
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-
-.movie-text {
-  flex: 1;
-  min-width: 300px;
-}
-
-.related-movies {
-  margin: 40px 20px;
-}
-
-.related-movies h2 {
-  margin-bottom: 20px;
-}
-
-.related-movies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 15px;
-}
-
-.related-movie-card {
-  text-align: center;
-  font-size: 14px;
-  text-decoration: none;
-  color: inherit;
+.details-back {
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(23, 34, 56, 0.7);
+  color: var(--text);
   cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: border-color 0.15s ease;
 }
 
-.related-movie-card img {
+.details-back:hover {
+  border-color: var(--marquee);
+}
+
+.details-main {
+  display: grid;
+  grid-template-columns: minmax(180px, 300px) 1fr;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: end;
+  margin-top: clamp(72px, 16vh, 180px);
+}
+
+.details-poster {
   width: 100%;
-  border-radius: 6px;
-  transition: transform 0.2s;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
 }
 
-.related-movie-card:hover img {
-  transform: scale(1.05);
+.details-no-poster {
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--faint);
 }
 
-.related-movie-card .no-poster {
-  width: 100%;
-  height: 180px;
-  background-color: #ccc;
-  border-radius: 6px;
+.details-title {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 60px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.details-facts {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  color: #333;
+  gap: 14px;
+  margin-bottom: 18px;
+  color: var(--muted);
+}
+
+.details-rating {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--marquee);
+  color: var(--marquee-ink);
+  font-weight: 700;
+  box-shadow: 0 0 14px rgba(242, 184, 75, 0.45);
+}
+
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.genre-chip {
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(23, 34, 56, 0.6);
+  font-size: 13px;
+}
+
+.details-overview {
+  max-width: 65ch;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+@media (max-width: 720px) {
+  .details-main {
+    grid-template-columns: 1fr;
+    align-items: start;
+    margin-top: 40px;
+  }
+
+  .details-poster {
+    max-width: 220px;
+  }
+}
+
+/* ---------- More like this ---------- */
+.related {
+  position: relative;
+  max-width: 1200px;
+  margin: 64px auto 0;
+  padding: 0 var(--page-pad) 72px;
+}
+
+.related-heading {
+  margin: 0 0 18px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.related-status {
+  margin: 0;
+  color: var(--muted);
 }
