@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Movie } from "../types/movie";
-import { TMDB_IMAGE_BASE_URL } from "../constants/constants";
 import "./Moviecarousel.css";
+import { getPosterUrl } from "../utils/tmdbImage";
 
 interface MovieCarouselProps {
   movies: Movie[];
@@ -68,7 +68,7 @@ export default function MovieCarousel({ movies, label }: MovieCarouselProps) {
               <div className="carousel-poster">
                 {movie.poster_path ? (
                   <img
-                    src={`${TMDB_IMAGE_BASE_URL}${movie.poster_path}`}
+                    src={getPosterUrl(movie.poster_path, "w154")}
                     alt=""
                     loading="lazy"
                   />

@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import type { Movie } from "../types/movie";
 import "./MovieCard.css";
+import { getPosterUrl } from "../utils/tmdbImage";
 
 interface MovieCardProps {
   popularMovieCard: Movie;
   genreMap: Record<number, string>;
+  priority:boolean
 }
 
 export default function MovieCard({
@@ -18,6 +20,7 @@ export default function MovieCard({
     poster_path,
   },
   genreMap,
+  priority
 }: MovieCardProps) {
   // Some search results have no genre_ids, and genreMap may still be loading
   const genreNames = (genre_ids || [])
@@ -33,11 +36,12 @@ export default function MovieCard({
       <div className="movie-card-poster">
         {poster_path ? (
           <img
-            src={`https://image.tmdb.org/t/p/w342${poster_path}`}
+            src={getPosterUrl(poster_path,"w185")}
             alt=""
-            loading="lazy"
-            width={342}
-            height={513}
+            loading={priority ? undefined : "lazy"}
+            width={185}
+            height={278}
+            fetchPriority={priority ? "high" : undefined}
           />
         ) : (
           <div className="movie-card-no-poster">No poster</div>

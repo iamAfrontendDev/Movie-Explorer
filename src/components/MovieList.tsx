@@ -10,11 +10,12 @@ interface MovieListProps {
 export default function MovieList({ popularMovies, genreMap }: MovieListProps) {
   return (
     <div className="movie-list">
-      {popularMovies.map((movie) => (
+      {popularMovies.map((movie,index) => (
         <MovieCard
           key={movie.id}
           popularMovieCard={movie}
           genreMap={genreMap}
+          priority={index<6}
         />
       ))}
     </div>

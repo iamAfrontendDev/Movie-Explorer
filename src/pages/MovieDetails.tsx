@@ -8,6 +8,7 @@ import type {
 import { useFetch } from "../hooks/useFetch";
 import MovieCarousel from "../components/Moviecarousel";
 import "./MovieDetails.css";
+import { getPosterUrl } from "../utils/tmdbImage";
 
 export default function MovieDetails() {
   const { id } = useParams();
@@ -51,9 +52,7 @@ export default function MovieDetails() {
   const rating = vote_average > 0 ? vote_average.toFixed(1) : null;
   const hours = runtime ? Math.floor(runtime / 60) : 0;
   const minutes = runtime ? runtime % 60 : 0;
-  const runtimeText = runtime
-    ? `${hours ? `${hours}h ` : ""}${minutes}m`
-    : "";
+  const runtimeText = runtime ? `${hours ? `${hours}h ` : ""}${minutes}m` : "";
 
   return (
     <div className="details">
@@ -80,7 +79,7 @@ export default function MovieDetails() {
         <div className="details-main">
           {poster_path ? (
             <img
-              src={`${TMDB_IMAGE_BASE_URL}${poster_path}`}
+              src={getPosterUrl(poster_path, "w500")}
               alt={`${title} poster`}
               className="details-poster"
             />
@@ -133,7 +132,10 @@ export default function MovieDetails() {
         )}
 
         {relatedMovies && relatedMovies.results.length > 0 && (
-          <MovieCarousel movies={relatedMovies.results} label="More like this" />
+          <MovieCarousel
+            movies={relatedMovies.results}
+            label="More like this"
+          />
         )}
       </section>
     </div>
