@@ -14,6 +14,7 @@ import { useDebounce } from "../hooks/useDebounce";
 import { TMDB_BASE_URL } from "../constants/constants";
 import { filterMovies } from "../utils/utils";
 import "./Home.css";
+import { getCachedGenres, saveCachedGenres } from "../utils/genreCache";
 
 const AUTO_LOAD_LIMIT = 5;
 
@@ -43,7 +44,9 @@ export default function Home() {
   const hasMoreSearchRef = useRef<boolean>(true);
 
   const debouncedSearch = useDebounce(filters.searchQuery, 1000);
-  const searchUrl = `${TMDB_BASE_URL}/search/movie?query=${debouncedSearch}&page=${searchPage}`;
+  const searchUrl = debouncedSearch
+    ? `${TMDB_BASE_URL}/search/movie?query=${debouncedSearch}&page=${searchPage}`
+    : "";
   const {
     data: searchResults,
     loading: searchLoading,
@@ -51,13 +54,18 @@ export default function Home() {
   } = useFetch<TMDBPaginatedResponse<Movie>>(searchUrl);
 
   // ---------- Genres ----------
-  const [genreMap, setGenreMap] = useState<Record<number, string>>({});
-  const genreListUrl = `${TMDB_BASE_URL}/genre/movie/list`;
+  const cachedGenre = getCachedGenres();
+  const [genreMap, setGenreMap] = useState<Record<number, string>>(
+    cachedGenre || {},
+  );
+
+  const genreListUrl = cachedGenre ? "" : `${TMDB_BASE_URL}/genre/movie/list`;
   const { data: genreListData } = useFetch<GenreListResponse>(genreListUrl);
 
   // ---------- Auto-load limit ----------
   const autoLoadCountRef = useRef(0);
   const [showLoadMore, setShowLoadMore] = useState(false);
+
 
   // Add each popular page to the list
   useEffect(() => {
@@ -99,11 +107,13 @@ export default function Home() {
     return map;
   };
 
-  useEffect(() => {
-    if (genreListData?.genres) {
-      setGenreMap(covertGenreMap(genreListData.genres));
-    }
-  }, [genreListData]);
+useEffect(() => {
+  if (genreListData?.genres) {
+    const map = covertGenreMap(genreListData.genres);
+    setGenreMap(map);
+    saveCachedGenres(map);
+  }
+}, [genreListData]);
 
   // Sentinel came ON screen → maybe load the next page
   const handleIntersect = useCallback(() => {
@@ -165,11 +175,11 @@ export default function Home() {
   // Is any filter typed/selected or currently applied?
   const hasFilters = Boolean(
     filters.genre ||
-      filters.year ||
-      filters.rating ||
-      appliedFilters.genre ||
-      appliedFilters.year ||
-      appliedFilters.rating,
+    filters.year ||
+    filters.rating ||
+    appliedFilters.genre ||
+    appliedFilters.year ||
+    appliedFilters.rating,
   );
 
   // Load more button
