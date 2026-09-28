@@ -4,12 +4,12 @@ A movie discovery app built with **React**, **TypeScript**, and **Vite**, powere
 
 ## Screenshots
 
-| Home | Movie Details |
-|---|---|
+| Home                                        | Movie Details                                           |
+| ------------------------------------------- | ------------------------------------------------------- |
 | ![Home page](./public/screenshots/home.png) | ![Movie details page](./public/screenshots/details.png) |
 
-| Related Movies Carousel | Search Results |
-|---|---|
+| Related Movies Carousel                                             | Search Results                                     |
+| ------------------------------------------------------------------- | -------------------------------------------------- |
 | ![Related movies carousel](./public/screenshots/related-movies.png) | ![Search results](./public/screenshots/search.png) |
 
 ## Features
@@ -33,6 +33,7 @@ A movie discovery app built with **React**, **TypeScript**, and **Vite**, powere
 ## Getting Started
 
 1. Clone the repo and install dependencies:
+
    ```bash
    git clone <this-repo-url>
    cd Movie-Explorer
@@ -40,11 +41,13 @@ A movie discovery app built with **React**, **TypeScript**, and **Vite**, powere
    ```
 
 2. Create a `.env` file in the project root:
+
    ```
    VITE_TMDB_API_KEY=your_tmdb_api_read_access_token_here
    VITE_TMDB_BASE_URL=https://api.themoviedb.org/3
    VITE_TMDB_BASE_IMAGE_URL=https://image.tmdb.org/t/p/w500
    ```
+
    You can get a free API key/read access token at [themoviedb.org](https://www.themoviedb.org/settings/api).
 
 3. Start the dev server:
@@ -82,4 +85,6 @@ A movie discovery app built with **React**, **TypeScript**, and **Vite**, powere
 
 ## Bug Runbook
 
-Detailed write-ups of the trickier bugs found while building infinite scroll (stale closures, callback refs, observer restart timing) are documented separately in `BUG_RUNBOOK.md`.
+Detailed write-ups of the trickier bugs found while building infinite scroll and filtering — stale closures, callback refs, observer restart timing, and more:
+
+- [📄 PDF version](./docs/Movie-Explorer-Bug-Book.pdf) — diagrams and plain-language walkthroughs.
